@@ -14,41 +14,43 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import in.co.helloworlds.security.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class ApplicationConfig {
-	
+
 	@Autowired
 	private UserRepository userRepository;
-	
+
 	@Bean
 	public UserDetailsService userDetailsService() {
-		System.out.println("ApplicationConfig.userDetailsService");
+		log.info("userDetailsService()");
 		return (username) -> userRepository
 				.findByEmail(username)
-				.orElseThrow(()-> new UsernameNotFoundException("User Not Found"));
+				.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
 	}
-	
+
 	@Bean
 	public PasswordEncoder passwordEncoder() {
+		log.info("passwordEncoder()");
 		return new BCryptPasswordEncoder();
 	}
-	
+
 	@Bean
 	public AuthenticationProvider authenticationProvider() {
-		System.out.println("ApplicationConfig.authenticationProvider");
-        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userDetailsService());
-        authenticationProvider.setPasswordEncoder(passwordEncoder());
+		log.info("authenticationProvider()");
+		DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+		authenticationProvider.setUserDetailsService(userDetailsService());
+		authenticationProvider.setPasswordEncoder(passwordEncoder());
 		return authenticationProvider;
 	}
-	
+
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-		System.out.println("ApplicationConfig.authenticationManager");
+		log.info("authenticationManager()");
 		return configuration.getAuthenticationManager();
 	}
-	
-	
+
 }

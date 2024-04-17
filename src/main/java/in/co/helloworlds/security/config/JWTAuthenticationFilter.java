@@ -18,7 +18,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JWTAuthenticationFilter extends OncePerRequestFilter {
@@ -36,20 +38,28 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
 			@NonNull FilterChain filterChain)
 			throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		System.out.println("JWTAuthenticationFilter.doFilterInternal");
+		log.info("doFilterInternal()");
+		log.info("JWTAuthenticationFilter.doFilterInternal  --> start");
+		try {
+			log.info(SecurityContextHolder.getContext().getAuthentication().getDetails().toString());
+		} catch (Exception e) {
+			log.error(e.getMessage());
+		}
+		log.info("JWTAuthenticationFilter.doFilterInternal  --> end");
 		final String authHeader = request.getHeader("Authorization");
 		final String jwt;
 		final String userEmail;
 		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+			log.info("doFilterInternal() --> Auth header missing");
 			filterChain.doFilter(request, response);
 			return;
 		}
 		jwt = authHeader.substring(7);
 		userEmail = jwtService.extractUsername(jwt);
-		System.out.println("UserName: " + userEmail);
+		log.info("UserName: " + userEmail);
 		if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 			UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+			log.info("UserDetails: " + userDetails.getUsername() + " " + userDetails.getPassword());
 			boolean isTokenValid = tokenRepository.findByToken(jwt)
 					.map(t -> !t.expired && !t.revoked)
 					.orElse(false);
@@ -63,12 +73,12 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 						new WebAuthenticationDetailsSource().buildDetails(request));
 				SecurityContextHolder.getContext().setAuthentication(authToken);
 			} else {
-				System.out.println("JWT token is invalid");
+				log.error("JWT token is invalid");
 			}
 		} else {
-			System.out.println("Else Auth == null or securityContextHolder == null");
+			log.error("Else Auth == null or securityContextHolder == null");
 		}
-		System.out.println("JWTAuthenticationFilter.doFilterInternal  --> end");
+		log.info("JWTAuthenticationFilter.doFilterInternal  --> end");
 		filterChain.doFilter(request, response);
 	}
 

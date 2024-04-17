@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.function.Function;
 
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,7 @@ import io.jsonwebtoken.Jwts;
 
 import javax.crypto.SecretKey;
 
+@Slf4j
 @Service
 public class JWTService {
 
@@ -31,18 +34,19 @@ public class JWTService {
 
 		// MacAlgorithm alg = Jwts.SIG.HS512; // or HS384 or HS256
 		// return alg.key().build();
-
+		log.info("getSignInKey()");
 		return Keys.hmacShaKeyFor(secretKey.getBytes());
 
 	}
 
 	private Claims extractAllClaims(String token) {
-		System.out.println("Tokken: " + token + " \n" + getSignInKey().getFormat() + "\n" + getSignInKey().getFormat());
+		log.info("extractAllClaims()");
 		return Jwts.parser().verifyWith(getSignInKey()).build().parseSignedClaims(token).getPayload();
 
 	}
 
 	public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+		log.info("extractClaim()");
 		final Claims claims = extractAllClaims(token);
 		return claimsResolver.apply(claims);
 	}
@@ -51,6 +55,7 @@ public class JWTService {
 			Map<String, String> extraClaims,
 			UserDetails userDetails,
 			long expiration) {
+		log.info("buildToken()");
 		return Jwts
 				.builder()
 				.claims(extraClaims)
@@ -62,35 +67,45 @@ public class JWTService {
 	}
 
 	public String extractUsername(String token) {
+		log.info("extractUsername()");
 		return extractClaim(token, Claims::getSubject);
 	}
 
 	public boolean isTokenExpired(String token) {
+		log.info("isTokenExpired()");
 		final Date expiration = extractClaim(token, Claims::getExpiration);
 		return expiration.before(new Date());
 	}
 
 	public boolean isTokenValid(String token, UserDetails userDetails) {
+		log.info("isTokenValid()");
 		final String username = extractUsername(token);
 		return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
 	}
 
 	public String generateToken(UserDetails userDetails) {
-		System.out.println(userDetails);
-		HashMap<String, String> map = new HashMap<String, String>();
-		map.put("email", userDetails.getUsername());
-		map.put("role", userDetails.getAuthorities().iterator().next().getAuthority());
-		return generateToken(map, userDetails);
+		log.info("generateToken()");
+		return generateToken(new HashMap<String, String>(), userDetails);
 	}
 
 	public String generateToken(
 			Map<String, String> extraClaims,
 			UserDetails userDetails) {
+		log.info("generateToken()");
 		return buildToken(extraClaims, userDetails, jwtExpiration);
 	}
 
 	public String generateRefreshToken(
 			UserDetails userDetails) {
+		log.info("generateRefreshToken()");
 		return buildToken(new HashMap<>(), userDetails, refreshExpiration);
 	}
+
+	public void deleteAllTokens(String token) {
+		log.info("deleteAllTokens()");
+		//delete token
+
+
+	}
+
 }
