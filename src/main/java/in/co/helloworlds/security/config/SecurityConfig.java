@@ -32,10 +32,8 @@ public class SecurityConfig {
 						.anyRequest().authenticated())
 				.sessionManagement(t -> t.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authenticationProvider(authenticationProvider)
-				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-				.logout(t-> t.logoutUrl("/api/v1/auth/logout")
-						.clearAuthentication(true)
-						);
+				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
 		return http.build();
 	}
 }

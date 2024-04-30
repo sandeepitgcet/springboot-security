@@ -101,7 +101,7 @@ public class JWTService {
 		return buildToken(new HashMap<>(), userDetails, refreshExpiration);
 	}
 
-	public void deleteAllTokens(String token) {
+	public void blackListToken(String token) {
 		log.info("deleteAllTokens()");
 		//delete token
 

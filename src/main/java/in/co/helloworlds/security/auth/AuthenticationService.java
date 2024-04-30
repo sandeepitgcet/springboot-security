@@ -111,6 +111,6 @@ public class AuthenticationService {
 
 	public void logout(String token) {
 		log.info("logout() Service");
-		jwtService.deleteAllTokens(token);
+		jwtService.blackListToken(token);
 	}
 }

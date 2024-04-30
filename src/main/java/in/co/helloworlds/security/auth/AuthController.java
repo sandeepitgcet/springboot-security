@@ -6,14 +6,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.types.RedisClientInfo;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.crypto.SecretKey;
 
@@ -24,6 +24,9 @@ public class AuthController {
 
   @Autowired
   private AuthenticationService service;
+
+  @Autowired
+  private RedisTemplate<String, String> redisTemplate;
 
   @PostMapping("/register")
   public ResponseEntity<AuthenticationResponse> register(
@@ -46,36 +49,10 @@ public class AuthController {
     return ResponseEntity.ok(service.refreshToken(request));
   }
 
-  @PostMapping("/test")
-  public void buildANdValidateToken(@RequestBody RegisterRequest request) {
+  @GetMapping("/test")
+  public void buildANdValidateToken() {
     System.out.println("AuthController.buildANdValidateToken");
-
-    System.out.println(request.toString());
-    HashMap<String, Object> claims = new HashMap<String, Object>();
-    claims.put("email", request.getEmail());
-    claims.put("firstName", request.getFirstName());
-    claims.put("lastName", request.getLastName());
-    claims.put("password", request.getPassword());
-
-    MacAlgorithm alg = Jwts.SIG.HS512; // or HS384 or HS256
-    SecretKey secretKey = alg.key().build();
-    System.out.println(secretKey.getEncoded().toString());
-
-    System.out.println(alg.key().build() == alg.key().build());
-
-    String token = Jwts.builder()
-        .claims(new HashMap<>())
-        .subject(request.getEmail())
-        .issuedAt(new Date(System.currentTimeMillis()))
-        .expiration(new Date(System.currentTimeMillis() + 360000))
-        .signWith(secretKey)
-        .compact();
-
-    System.out.println("Token :" + token);
-
-    var payload = Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload();
-
-    System.out.println(payload);
+    System.out.println(redisTemplate.opsForValue().get("name"));
   }
 
 }
