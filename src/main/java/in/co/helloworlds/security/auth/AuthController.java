@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.types.RedisClientInfo;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,7 @@ public class AuthController {
   private RedisTemplate<String, String> redisTemplate;
 
   @PostMapping("/register")
-  public ResponseEntity<AuthenticationResponse> register(
+  public ResponseEntity<RegisterResponse> register(
       @RequestBody RegisterRequest request) {
     log.info("register()");
     return ResponseEntity.ok(service.register(request));
@@ -50,9 +51,12 @@ public class AuthController {
   }
 
   @GetMapping("/test")
-  public void buildANdValidateToken() {
+  @Cacheable("test")
+  public String buildANdValidateToken(@RequestParam String val) {
     System.out.println("AuthController.buildANdValidateToken");
-    System.out.println(redisTemplate.opsForValue().get("name"));
+//    System.out.println(redisTemplate.opsForValue().get("name"));
+//    throw new RuntimeException();
+    return val+" Helllo";
   }
 
 }

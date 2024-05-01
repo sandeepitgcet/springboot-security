@@ -3,11 +3,14 @@ package in.co.helloworlds.security.auth;
 import in.co.helloworlds.security.config.JWTService;
 
 import java.util.HashMap;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -32,71 +35,50 @@ public class AuthenticationService {
 	@Autowired
 	private AuthenticationManager authenticationManager;
 
-	public AuthenticationResponse register(RegisterRequest request) {
+	public RegisterResponse register(RegisterRequest request) {
 		log.info("register() Service");
-		HashMap<String, String> map = new HashMap<>();
-		String encodedPassString = passwordEncoder.encode(request.getPassword());
-		map.put("firstname", request.getFirstName());
-		map.put("lastname", request.getLastName());
-		map.put("email", request.getEmail());
-		map.put("password", encodedPassString);
-		User user = User.builder()
+		//Check if Email is registered or not
+		Optional<User>  user = userRepository.findByEmail(request.getEmail());
+		if(user.isPresent()) {
+			throw new BadCredentialsException("Email already in use");
+		}
+
+		//Save new User to DB
+		User newUser = User.builder()
 				.firstname(request.getFirstName())
 				.lastname(request.getLastName())
 				.email(request.getEmail())
-				.password(encodedPassString)
+				.password(passwordEncoder.encode(request.getPassword()))
 				.build();
-		userRepository.save(user);
-		String token = jwtService.generateToken(map, user);
-		return AuthenticationResponse.builder().token(token).build();
+		userRepository.save(newUser);
+
+		return RegisterResponse.builder()
+				.statusCode(HttpStatus.ACCEPTED.value()).
+				message("Registration Successful")
+				.build();
 	}
 
 	public AuthenticationResponse authenticate(AuthenticationRequest request) {
 		log.info("authenticate() Service");
-		try {
-			// Retrieve user once
-			User user = userRepository.findByEmail(request.getEmail())
-					.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
 
-			// Authenticate
-			authenticationManager.authenticate(
-					new UsernamePasswordAuthenticationToken(
-							request.getEmail(),
-							request.getPassword()));
+//		// Retrieve user once
+//		User user = userRepository.findByEmail(request.getEmail())
+//				.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
 
-			// Generate token
-			String token = jwtService.generateToken(user);
-			return AuthenticationResponse.builder().token(token).build();
-		} catch (BadCredentialsException e) {
-			log.error(e.getMessage());
-			return AuthenticationResponse.builder().error(e.getMessage()).build();
-		} catch (UsernameNotFoundException e) {
-			log.error(e.getMessage());
-			return AuthenticationResponse.builder().error(e.getMessage()).build();
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			return AuthenticationResponse.builder().error(e.getMessage()).build();
-		}
+		// Authenticate
+		authenticationManager.authenticate(
+				new UsernamePasswordAuthenticationToken(
+						request.getEmail(),
+						request.getPassword()));
+//
+		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+		// Generate token
+		String token = jwtService.generateToken(user);
+		return AuthenticationResponse.builder().token(token).build();
+
+
 	}
-
-	// public AuthenticationResponse authenticate(AuthenticationRequest request) {
-	// log.info("authenticate()");
-	// try {
-	// authenticationManager.authenticate(
-	// new UsernamePasswordAuthenticationToken(
-	// request.getEmail(),
-	// request.getPassword()));
-	// } catch (BadCredentialsException e) {
-	// log.error(e.getMessage());
-	// return AuthenticationResponse.builder().error(e.getMessage()).build();
-	// } catch (Exception e) {
-	// log.error(e.getMessage(), e);
-	// return AuthenticationResponse.builder().error(e.getMessage()).build();
-	// }
-	// User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
-	// String token = jwtService.generateToken(user);
-	// return AuthenticationResponse.builder().token(token).build();
-	// }
 
 	public AuthenticationResponse refreshToken(AuthenticationRequest request) {
 		log.info("RefreshToken() Service");

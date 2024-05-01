@@ -5,8 +5,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -27,9 +30,16 @@ public class ApplicationConfig {
 	@Bean
 	public UserDetailsService userDetailsService() {
 		log.info("userDetailsService()");
-		return (username) -> userRepository
-				.findByEmail(username)
-				.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
+		return (username) -> {
+			UserDetails userDetails =  userRepository
+					.findByEmail(username)
+					.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
+			// Set user details in the security context
+			SecurityContextHolder.getContext().setAuthentication(
+					new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()));
+
+			return userDetails;
+		};
 	}
 
 	@Bean

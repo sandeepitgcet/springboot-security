@@ -9,6 +9,7 @@ import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -83,8 +84,9 @@ public class JWTService {
 		return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
 	}
 
+	@Cacheable(value = "token")
 	public String generateToken(UserDetails userDetails) {
-		log.info("generateToken()");
+		log.info("-----------------------generateToken() ----------------------------------");
 		return generateToken(new HashMap<String, String>(), userDetails);
 	}
 
