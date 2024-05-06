@@ -5,12 +5,15 @@ import in.co.helloworlds.security.config.JWTService;
 import java.util.HashMap;
 import java.util.Optional;
 
+import in.co.helloworlds.security.config.RedisService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,6 +37,9 @@ public class AuthenticationService {
 
 	@Autowired
 	private AuthenticationManager authenticationManager;
+
+	@Autowired
+	private RedisService redisService;
 
 	public RegisterResponse register(RegisterRequest request) {
 		log.info("register() Service");
@@ -61,38 +67,26 @@ public class AuthenticationService {
 	public AuthenticationResponse authenticate(AuthenticationRequest request) {
 		log.info("authenticate() Service");
 
-//		// Retrieve user once
-//		User user = userRepository.findByEmail(request.getEmail())
-//				.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
-
 		// Authenticate
 		authenticationManager.authenticate(
 				new UsernamePasswordAuthenticationToken(
 						request.getEmail(),
 						request.getPassword()));
 //
-		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
+		UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		// Generate token
 		String token = jwtService.generateToken(user);
+
+		redisService.setValue(user.getUsername(), user);
 		return AuthenticationResponse.builder().token(token).build();
 
 
 	}
 
-	public AuthenticationResponse refreshToken(AuthenticationRequest request) {
-		log.info("RefreshToken() Service");
-		authenticationManager.authenticate(
-				new UsernamePasswordAuthenticationToken(
-						request.getEmail(),
-						request.getPassword()));
-		User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
-		String token = jwtService.generateRefreshToken(user);
-		return AuthenticationResponse.builder().token(token).build();
-	}
-
-	public void logout(String token) {
+	@CacheEvict("token")
+	public void logout() {
 		log.info("logout() Service");
-		jwtService.blackListToken(token);
+		String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+		redisService.deleteKey(userName);
 	}
 }

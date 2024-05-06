@@ -3,6 +3,7 @@ package in.co.helloworlds.security.user;
 import lombok.Getter;
 
 // @RequiredArgsConstructor
+@Getter
 public enum Permission {
 
     ADMIN_READ("admin:read"),
@@ -18,7 +19,6 @@ public enum Permission {
         this.permission = string;
     }
 
-    @Getter
     private final String permission;
 
 }

@@ -1,5 +1,6 @@
 package in.co.helloworlds.security.config;
 
+import in.co.helloworlds.security.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,26 +22,41 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Configuration
-@RequiredArgsConstructor
 public class ApplicationConfig {
 
-	@Autowired
-	private UserRepository userRepository;
+	private final UserRepository userRepository;
 
-	@Bean
+    public ApplicationConfig(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+
+    @Bean
 	public UserDetailsService userDetailsService() {
 		log.info("userDetailsService()");
-		return (username) -> {
-			UserDetails userDetails =  userRepository
-					.findByEmail(username)
-					.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
-			// Set user details in the security context
+		return (username) ->  {
+				UserDetails userDetails = userRepository
+											.findByEmail(username)
+											.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
 			SecurityContextHolder.getContext().setAuthentication(
 					new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()));
-
-			return userDetails;
+				return userDetails;
+			};
 		};
-	}
+
+//		return (username) -> {
+//			UserDetails userDetails = (UserDetails)redisService.getValue(username);
+//			if(userDetails == null) {
+//				log.info("User not found in cache");
+//				userDetails =  userRepository
+//						.findByEmail(username)
+//						.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
+//			}
+//			log.info("User found in cache");
+//			// Set user details in the security context
+//			SecurityContextHolder.getContext().setAuthentication(
+//					new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()));
+//			return userDetails;
 
 	@Bean
 	public PasswordEncoder passwordEncoder() {

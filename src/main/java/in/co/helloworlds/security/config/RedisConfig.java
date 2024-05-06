@@ -8,15 +8,15 @@ import org.springframework.data.redis.core.RedisTemplate;
 
 @Configuration
 public class RedisConfig {
-//    @Bean
-//    public JedisConnectionFactory redisConnectionFactory() {
-//        return new JedisConnectionFactory();
-//    }
-//
-//    @Bean
-//    RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
-//        RedisTemplate<String, Object> template = new RedisTemplate<>();
-//        template.setConnectionFactory(connectionFactory);
-//        return template;
-//    }
+    @Bean
+    public JedisConnectionFactory redisConnectionFactory() {
+        return new JedisConnectionFactory();
+    }
+
+    @Bean
+    RedisTemplate<?, ?> redisTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<?, ?> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+        return template;
+    }
 }

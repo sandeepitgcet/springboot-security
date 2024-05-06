@@ -1,13 +1,9 @@
 package in.co.helloworlds.security.user;
 
 import in.co.helloworlds.security.token.Token;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -25,11 +21,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 @AllArgsConstructor
 @Entity
 @Table(name = "user")
-public class User implements UserDetails {
+public class User implements UserDetails, Serializable {
 
   @Id
-  @GeneratedValue
-  private Integer id;
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private String id;
   private String firstname;
   private String lastname;
   private String email;
@@ -38,6 +34,10 @@ public class User implements UserDetails {
   @Enumerated(EnumType.STRING)
   @Builder.Default
   private Role role = Role.USER;
+
+
+  @OneToMany(mappedBy = "token",  fetch = FetchType.EAGER)
+  private List<Token> tokens;
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -74,5 +74,11 @@ public class User implements UserDetails {
   public boolean isEnabled() {
     return true;
   }
+
+//  @Override
+//  public String toString() {
+//    return "User [id=" + id + ", firstname=" + firstname + ", lastname=" + lastname
+//            + ", email=" + email + ", role=" + role + ", tokens=" + tokens + "]";
+//  }
 
 }

@@ -18,6 +18,7 @@ import static in.co.helloworlds.security.user.Permission.MANAGER_DELETE;
 import static in.co.helloworlds.security.user.Permission.MANAGER_READ;
 import static in.co.helloworlds.security.user.Permission.MANAGER_UPDATE;
 
+@Getter
 @RequiredArgsConstructor
 public enum Role {
 
@@ -25,7 +26,6 @@ public enum Role {
   ADMIN(Set.of(ADMIN_READ, ADMIN_UPDATE, ADMIN_CREATE, ADMIN_DELETE)),
   MANAGER(Set.of(MANAGER_READ, MANAGER_UPDATE, MANAGER_CREATE, MANAGER_DELETE));
 
-  @Getter
   private final Set<Permission> permissions;
 
   public List<SimpleGrantedAuthority> getAuthorities() {

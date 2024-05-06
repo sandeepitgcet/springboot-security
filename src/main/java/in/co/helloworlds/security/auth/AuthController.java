@@ -10,6 +10,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.types.RedisClientInfo;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -26,9 +28,6 @@ public class AuthController {
   @Autowired
   private AuthenticationService service;
 
-  @Autowired
-  private RedisTemplate<String, String> redisTemplate;
-
   @PostMapping("/register")
   public ResponseEntity<RegisterResponse> register(
       @RequestBody RegisterRequest request) {
@@ -43,20 +42,19 @@ public class AuthController {
     return ResponseEntity.ok(service.authenticate(request));
   }
 
-  @PostMapping("/refresh-token")
-  public ResponseEntity<AuthenticationResponse> refreshToken(
-      @RequestBody AuthenticationRequest request) {
-    log.info("refresh-token()");
-    return ResponseEntity.ok(service.refreshToken(request));
+  @GetMapping("/logout")
+  public ResponseEntity<?> logout(){
+    log.info("logout()");
+    service.logout();
+    return ResponseEntity.ok("logged out");
   }
 
   @GetMapping("/test")
-  @Cacheable("test")
   public String buildANdValidateToken(@RequestParam String val) {
     System.out.println("AuthController.buildANdValidateToken");
 //    System.out.println(redisTemplate.opsForValue().get("name"));
-//    throw new RuntimeException();
-    return val+" Helllo";
+    throw new RuntimeException();
+//    return val+" Helllo";
   }
 
 }

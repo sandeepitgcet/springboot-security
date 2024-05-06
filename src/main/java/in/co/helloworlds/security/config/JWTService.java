@@ -5,10 +5,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.security.Keys;
+import io.netty.channel.unix.Errors;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -40,9 +43,16 @@ public class JWTService {
 
 	}
 
-	private Claims extractAllClaims(String token) {
+	private Claims extractAllClaims(String token){
 		log.info("extractAllClaims()");
 		return Jwts.parser().verifyWith(getSignInKey()).build().parseSignedClaims(token).getPayload();
+//		try{
+//			return Jwts.parser().verifyWith(getSignInKey()).build().parseSignedClaims(token).getPayload();
+//		}catch (Exception e){
+//			log.error("Invalid JWT token");
+//			throw new JwtException("Invalid JWT token");
+//		}
+
 
 	}
 
@@ -84,11 +94,11 @@ public class JWTService {
 		return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
 	}
 
-	@Cacheable(value = "token")
 	public String generateToken(UserDetails userDetails) {
 		log.info("-----------------------generateToken() ----------------------------------");
 		return generateToken(new HashMap<String, String>(), userDetails);
 	}
+
 
 	public String generateToken(
 			Map<String, String> extraClaims,
