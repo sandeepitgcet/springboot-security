@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Optional;
 
 import in.co.helloworlds.security.config.RedisService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
@@ -24,22 +25,18 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class AuthenticationService {
 
-	@Autowired
-	private UserRepository userRepository;
+	private final UserRepository userRepository;
 
-	@Autowired
-	private PasswordEncoder passwordEncoder;
+	private final PasswordEncoder passwordEncoder;
 
-	@Autowired
-	private JWTService jwtService;
+	private final JWTService jwtService;
 
-	@Autowired
-	private AuthenticationManager authenticationManager;
+	private final AuthenticationManager authenticationManager;
 
-	@Autowired
-	private RedisService redisService;
+	private final RedisService redisService;
 
 	public RegisterResponse register(RegisterRequest request) {
 		log.info("register() Service");

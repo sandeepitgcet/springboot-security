@@ -1,5 +1,6 @@
 package in.co.helloworlds.security.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,13 +17,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-	@Autowired
-	private AuthenticationProvider authenticationProvider;
+	private final AuthenticationProvider authenticationProvider;
 
-	@Autowired
-	private JWTAuthenticationFilter jwtAuthenticationFilter;
+	private final JWTAuthenticationFilter jwtAuthenticationFilter;
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

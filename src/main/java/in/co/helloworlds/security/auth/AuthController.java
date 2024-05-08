@@ -3,6 +3,7 @@ package in.co.helloworlds.security.auth;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.MacAlgorithm;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +24,10 @@ import javax.crypto.SecretKey;
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
-  @Autowired
-  private AuthenticationService service;
+  private final AuthenticationService service;
 
   @PostMapping("/register")
   public ResponseEntity<RegisterResponse> register(

@@ -35,17 +35,13 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
-	@Autowired
-	private JWTService jwtService;
+	private final JWTService jwtService;
 
-	@Autowired
-	private UserDetailsService userDetailsService;
+	private final UserDetailsService userDetailsService;
 
-	@Autowired
-	private TokenRepository tokenRepository;
+	private final TokenRepository tokenRepository;
 
-	@Autowired
-	private RedisService redisService;
+	private final RedisService redisService;
 
 	@Override
 	protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
@@ -68,8 +64,8 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 				throw new UsernameNotFoundException("User not found");
 			}
 			SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities()));
-			log.info("UserDetails: " + user);
-			System.out.println(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+			//log.info("UserDetails: " , user);
+			//System.out.println(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
 			filterChain.doFilter(request, response);
 		}catch (Exception e){
 			log.error(e.getMessage(),e);

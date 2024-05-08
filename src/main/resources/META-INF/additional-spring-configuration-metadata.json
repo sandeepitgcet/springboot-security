@@ -2,16 +2,16 @@
   {
     "name": "application.security.jwt.secret-key",
     "type": "java.lang.String",
-    "description": "A description for 'application.security.jwt.secret-key'"
+    "description": "A description for 'application.security.jwt.secret-key'."
   },
   {
     "name": "application.security.jwt.expiration",
     "type": "java.lang.String",
-    "description": "A description for 'application.security.jwt.expiration'"
+    "description": "A description for 'application.security.jwt.expiration'."
   },
   {
     "name": "application.security.jwt.refresh-token.expiration",
     "type": "java.lang.String",
-    "description": "A description for 'application.security.jwt.refresh-token.expiration'"
+    "description": "A description for 'application.security.jwt.refresh-token.expiration'."
   }
 ]}
